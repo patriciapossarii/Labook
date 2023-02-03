@@ -1,4 +1,4 @@
--- Active: 1675121463849@@127.0.0.1@3306
+-- Active: 1675449217751@@127.0.0.1@3306
 CREATE TABLE users(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     name TEXT NOT NULL,
@@ -11,8 +11,8 @@ CREATE TABLE posts(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     creator_id TEXT NOT NULL,
     content TEXT NOT NULL,
-    likes INTEGER NOT NULL,
-    dislikes INTEGER NOT NULL,
+    likes INTEGER DEFAULT (0) NOT NULL,
+    dislikes INTEGER DEFAULT (0) NOT NULL,
     updated_at TEXT DEFAULT (DATETIME()) NOT NULL,
     created_at TEXT DEFAULT (DATETIME()) NOT NULL,
     FOREIGN KEY (creator_id) REFERENCES users(id)
@@ -55,7 +55,9 @@ VALUES(
 
     DROP TABLE posts;
 
-    INSERT INTO posts(post_id,user_id, content)
+    INSERT INTO posts (id,creator_id, content)
     VALUES("post01","user03","radio e polonio"),
     ("post02","user03","a corrente alternada");
+
+     SELECT * FROM posts;
     
