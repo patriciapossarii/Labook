@@ -1,11 +1,13 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
-import { db } from './database/knex'
+import { UserController } from './controler/UserController'
+
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
+const userController = new UserController()
 
 app.listen(3001, () => {
     console.log(`Servidor rodando na porta ${3003}`)
@@ -13,8 +15,7 @@ app.listen(3001, () => {
 
 app.get("/ping", async (req: Request, res: Response) => {
     try {
-				const result = await db("users")
-        res.status(200).send({ message: "Pong!", result })
+        res.status(200).send({ message: "Pong!" })
     } catch (error) {
         console.log(error)
 
@@ -29,3 +30,5 @@ app.get("/ping", async (req: Request, res: Response) => {
         }
     }
 })
+
+app.get("/users", userController.getUsers)
