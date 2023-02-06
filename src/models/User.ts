@@ -4,8 +4,8 @@ export class User {
         private name: string,
         private email: string,
         private password: string,
-        private role:string,
-        private createdAt: string
+        private role:string = "user",
+        private createdAt: string = new Date().toISOString()
     ) {}
 
     public getId(): string {

@@ -9,7 +9,7 @@ app.use(cors())
 app.use(express.json())
 const userController = new UserController()
 
-app.listen(3001, () => {
+app.listen(3003, () => {
     console.log(`Servidor rodando na porta ${3003}`)
 })
 
@@ -32,3 +32,10 @@ app.get("/ping", async (req: Request, res: Response) => {
 })
 
 app.get("/users", userController.getUsers)
+app.post("/users/signup",userController.signUp)
+app.post("/users/login",userController.login)
+app.get("/posts")
+app.post("/posts")
+app.put("/posts/:id")
+app.delete("/posts/:id")
+app.put("/posts/:id/like")
