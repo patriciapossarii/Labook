@@ -60,4 +60,6 @@ VALUES(
     ("post02","user03","a corrente alternada");
 
      SELECT * FROM posts;
+
+     SELECT MAX(id) FROM users LIMIT 1;
     
