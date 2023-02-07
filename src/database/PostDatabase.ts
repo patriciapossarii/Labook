@@ -4,7 +4,7 @@ import { UserDatabase } from "./UserDatabase"
 
 export class PostDatabase extends BaseDatabase {
     public static TABLE_POSTS = "posts"
-    public static TABLE_LIKES_DISLIKES = "likes_dislikes"
+
 
     public async findPosts(q: string | undefined) {
         let postsDB
@@ -51,8 +51,13 @@ export class PostDatabase extends BaseDatabase {
             "u.id as uid",
             "u.name as name"
         )
-
         return result
+    }
+
+    public async insertPost(newPostDB: PostDB) {
+        await BaseDatabase
+            .connection(PostDatabase.TABLE_POSTS)
+            .insert(newPostDB)
     }
 
 }

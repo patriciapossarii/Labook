@@ -9,12 +9,12 @@ export interface UserDB {
 
 export interface PostDB {
     id: string,
-    creatorId: string,
+    creator_id: string,
     content: string,
     likes: number,
     dislikes: number,
-    createdAt: string,
-    updatedAt: string
+    created_at: string,
+    updated_at: string
 }
 
 
@@ -28,6 +28,12 @@ export interface TLoginRequest {
     email: string,
     password: string,
 }
+
+export interface TPostRequest {
+    content: string
+}
+
+
 
 export type TUserPost = {
     id: string,

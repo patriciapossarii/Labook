@@ -92,7 +92,7 @@ export class UserController {
                 request.email,
                 request.password
             )
-            console.log(newUser)
+            
 
             const newUserDB: UserDB = {
                 id: newUser.getId(),

@@ -3,8 +3,8 @@ export class Post {
         private id: string,
         private creatorId: string,
         private content: string,
-        private likes: number,
-        private dislikes:number ,
+        private likes: number = 0,
+        private dislikes:number  = 0,
         private createdAt: string = new Date().toISOString(),
         private updatedAt: string = new Date().toISOString()
     ) {}
