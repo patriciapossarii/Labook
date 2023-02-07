@@ -57,7 +57,7 @@ VALUES(
 
     INSERT INTO posts (id,creator_id, content)
     VALUES("post01","user03","radio e polonio"),
-    ("post02","user03","a corrente alternada");
+    ("post02","user05","a corrente alternada");
 
      SELECT * FROM posts;
 
