@@ -10,6 +10,7 @@ import {
 } from "../types"
 import { v4 as uuidv4 } from 'uuid';
 import moment, { Moment } from 'moment'
+import { UserDatabase } from "../database/UserDatabase";
 export class PostContoller {
 
     public getPosts = async (req: Request, res: Response) => {
@@ -192,9 +193,92 @@ export class PostContoller {
 
             await postDatabase.deletePostById(postToDeletBD.id)
 
-        
             res.status(200).send({
                 message: "Post deletado com sucesso"
+            })
+
+        } catch (error) {
+            console.log(error)
+
+            if (req.statusCode === 200) {
+                res.status(500)
+            }
+
+            if (error instanceof Error) {
+                res.send(error.message)
+            } else {
+                res.send("Erro inesperado")
+            }
+        }
+
+    }
+
+    public likeDislike = async (req: Request, res: Response) => {
+
+        try {
+            const user = req.headers['user-id'] as string
+            const { id } = req.params
+            const newLike = req.body.like
+
+            const postDatabase = new PostDatabase()
+            const userDatabase = new UserDatabase()
+
+            const userExistDB = await userDatabase.findUserById(user)
+            if (!userExistDB) {
+                throw new Error("'id' do usuário não existe")
+            }
+
+
+            const postExistDB = await postDatabase.findPostById(id)
+            if (!postExistDB) {
+                throw new Error("'id' do post não existe")
+            }
+
+
+
+
+            if (newLike !== undefined) {
+                if (typeof newLike !== "boolean") {
+                    res.status(400)
+                    throw new Error("'like' do post deve ser boolean (true ou false).")
+                }
+            }
+
+            let likeBD = 0
+            if (newLike === true) {
+                likeBD = 1
+            } 
+            
+            const checkLikePost = await postDatabase.checkPostWithLike(user, id, likeBD)
+            console.log(checkLikePost)
+
+
+            const post = new Post(
+                postExistDB.id,
+                postExistDB.creator_id,
+                postExistDB.content,
+                postExistDB.likes || newLike,
+                postExistDB.dislikes,
+                postExistDB.created_at,
+                postExistDB.updated_at
+            )
+
+
+
+            const updatePostDB: PostDB = {
+                id: post.getId(),
+                creator_id: post.getCreatorId(),
+                content: post.getContent(),
+                likes: post.getLikes(),
+                dislikes: post.getDislikes(),
+                created_at: post.getCreatedAt(),
+                updated_at: post.getUpdatedAt()
+            }
+
+            await postDatabase.updatePost(updatePostDB)
+            res.status(200).send({
+                message: "Post editado com sucesso",
+                result: checkLikePost
             })
 
 
@@ -211,7 +295,6 @@ export class PostContoller {
                 res.send("Erro inesperado")
             }
         }
-
     }
 
 }

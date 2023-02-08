@@ -4,6 +4,7 @@ import { UserDatabase } from "./UserDatabase"
 
 export class PostDatabase extends BaseDatabase {
     public static TABLE_POSTS = "posts"
+    public static TABLE_LIKES_DISLIKES = "likes_dislikes"
 
 
     public async findPosts(q: string | undefined) {
@@ -34,14 +35,6 @@ export class PostDatabase extends BaseDatabase {
             return result
         }
     
-      
-/*
-    public async findPostById(id: string) {
-        const [result]: PostDB[] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
-            .where({ id })
-        return result
-    }
-*/
     public async findPostsByUserId(id: string) {
         const result = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
             .where({ creator_id: id })
@@ -81,5 +74,13 @@ export class PostDatabase extends BaseDatabase {
             .delete()
             .where({ id })
     }
+
+    public async checkPostWithLike(userId:string,postId:string ){
+        const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+        .where({user_id:userId,post_id:postId})
+        return result
+    }
+
+
 
 }

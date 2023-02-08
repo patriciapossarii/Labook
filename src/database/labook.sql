@@ -24,6 +24,9 @@ CREATE TABLE likes_dislikes(
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (post_id) REFERENCES posts(id)
 );
+
+INSERT INTO likes_dislikes(user_id, post_id,like)
+VALUES("user01","post01",1);
 INSERT INTO users (id, name, email, password) 
 VALUES(
         "user01",
@@ -62,4 +65,5 @@ VALUES(
      SELECT * FROM posts;
 
      SELECT MAX(id) FROM users LIMIT 1;
+     select * FROM likes_dislikes;
     
