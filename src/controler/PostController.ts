@@ -243,13 +243,13 @@ export class PostContoller {
                     throw new Error("'like' do post deve ser boolean (true ou false).")
                 }
             }
-
+/*
             let likeBD = 0
             if (newLike === true) {
                 likeBD = 1
             } 
-            
-            const checkLikePost = await postDatabase.checkPostWithLike(user, id, likeBD)
+*/
+            const checkLikePost = await postDatabase.checkPostWithLike(user, id)
             console.log(checkLikePost)
 
 
