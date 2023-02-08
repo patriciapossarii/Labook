@@ -1,17 +1,21 @@
-export class Post {    
+import moment, { Moment } from 'moment'
+var date = Date.now()
+let dateNow = (moment(date)).format('YYYY-MM-DD HH:mm:ss')
+export class Post {
+
     constructor(
         private id: string,
         private creatorId: string,
         private content: string,
         private likes: number = 0,
-        private dislikes:number  = 0,
-        private createdAt: string = new Date().toISOString(),
-        private updatedAt: string = new Date().toISOString()
-    ) {}
+        private dislikes: number = 0,
+        private createdAt: string = dateNow,
+        private updatedAt: string = dateNow
+    ) { }
 
     public getId(): string {
         return this.id
-    } 
+    }
     public setId(value: string): void {
         this.id = value
     }

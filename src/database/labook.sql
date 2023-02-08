@@ -53,7 +53,7 @@ VALUES(
 
     SELECT * FROM users;
 
-    DROP TABLE posts;
+    --DROP TABLE posts;
 
     INSERT INTO posts (id,creator_id, content)
     VALUES("post01","user03","radio e polonio"),

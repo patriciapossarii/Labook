@@ -9,6 +9,7 @@ import {
     PostDB
 } from "../types"
 import { v4 as uuidv4 } from 'uuid';
+import moment, { Moment } from 'moment'
 export class PostContoller {
 
     public getPosts = async (req: Request, res: Response) => {
@@ -95,7 +96,7 @@ export class PostContoller {
             }
             await postDatabase.insertPost(newPostDB)
             res.status(201).send("Post criado com sucesso")
-            
+
         } catch (error) {
             console.log(error)
 
@@ -109,10 +110,73 @@ export class PostContoller {
                 res.send("Erro inesperado")
             }
         }
-
-
     }
 
+    public editPostById = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params
+            const newContent = req.body.content
 
+            const postDatabase = new PostDatabase()
+            if (newContent !== undefined) {
+                if (typeof newContent !== "string") {
+                    res.status(400)
+                    throw new Error("'content' do post deve ser string.")
+                }
+                if (newContent.length < 2) {
+                    res.status(400)
+                    throw new Error("'content' do post inválido. Deve conter no mínimo 2 caracteres")
+                }
+            }
+            const postToEditDB = await postDatabase.findPostById(id)
+            if (!postToEditDB) {
+                throw new Error("'id' para editar não existe")
+            }
+            var date = Date.now()
+            let dateNow = (moment(date)).format('YYYY-MM-DD HH:mm:ss')
+            console.log(postToEditDB)
+            const post = new Post(
+                postToEditDB.id,
+                postToEditDB.creator_id,
+                newContent || postToEditDB.content,
+                postToEditDB.likes,
+                postToEditDB.dislikes,
+                postToEditDB.created_at,
+                dateNow
+            )
+
+
+
+            const updatePostDB: PostDB = {
+                id: post.getId(),
+                creator_id: post.getCreatorId(),
+                content: post.getContent(),
+                likes: post.getLikes(),
+                dislikes: post.getDislikes(),
+                created_at: post.getCreatedAt(),
+                updated_at: post.getUpdatedAt()
+            }
+            
+            await postDatabase.updatePost(updatePostDB)
+            res.status(200).send({
+                message: "Post editado com sucesso",
+                result: updatePostDB
+            })
+
+
+        } catch (error) {
+            console.log(error)
+
+            if (req.statusCode === 200) {
+                res.status(500)
+            }
+
+            if (error instanceof Error) {
+                res.send(error.message)
+            } else {
+                res.send("Erro inesperado")
+            }
+        }
+    }
 
 }

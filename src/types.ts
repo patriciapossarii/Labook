@@ -73,3 +73,7 @@ export type TPostDB = {
     createdAt: string,
     updatedAt: string
 }
+
+export interface UpdatePost{
+    content:string
+}

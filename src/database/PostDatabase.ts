@@ -1,4 +1,4 @@
-import { PostDB } from "../types"
+import { PostDB, UpdatePost } from "../types"
 import { BaseDatabase } from "./BaseDatabase"
 import { UserDatabase } from "./UserDatabase"
 
@@ -28,8 +28,8 @@ export class PostDatabase extends BaseDatabase {
         return result
     }
 
-    public async findPostById(id: string) {
-        const result = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
+    public async findPostById(id:string | undefined):Promise <PostDB > {
+        const [result]: PostDB[] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
             .where({ id: id })
         return result
     }
@@ -59,5 +59,13 @@ export class PostDatabase extends BaseDatabase {
             .connection(PostDatabase.TABLE_POSTS)
             .insert(newPostDB)
     }
+
+    public async updatePost(updatePostDB:PostDB){
+        await BaseDatabase
+        .connection(PostDatabase.TABLE_POSTS)
+        .update(updatePostDB)
+        .where({id:updatePostDB.id})
+    }
+
 
 }
