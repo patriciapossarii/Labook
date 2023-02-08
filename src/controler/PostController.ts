@@ -156,7 +156,7 @@ export class PostContoller {
                 created_at: post.getCreatedAt(),
                 updated_at: post.getUpdatedAt()
             }
-            
+
             await postDatabase.updatePost(updatePostDB)
             res.status(200).send({
                 message: "Post editado com sucesso",
@@ -177,6 +177,41 @@ export class PostContoller {
                 res.send("Erro inesperado")
             }
         }
+    }
+
+    public deletPostById = async (req: Request, res: Response) => {
+        try {
+            const idToDelete = req.params.id
+            console.log(idToDelete)
+            const postDatabase = new PostDatabase()
+            const postToDeletBD = await postDatabase.findPostById(idToDelete)
+
+            if (!postToDeletBD) {
+                throw new Error("'id' para deletar não existe")
+            }
+
+            await postDatabase.deletePostById(postToDeletBD.id)
+
+        
+            res.status(200).send({
+                message: "Post deletado com sucesso"
+            })
+
+
+        } catch (error) {
+            console.log(error)
+
+            if (req.statusCode === 200) {
+                res.status(500)
+            }
+
+            if (error instanceof Error) {
+                res.send(error.message)
+            } else {
+                res.send("Erro inesperado")
+            }
+        }
+
     }
 
 }

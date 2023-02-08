@@ -28,12 +28,20 @@ export class PostDatabase extends BaseDatabase {
         return result
     }
 
-    public async findPostById(id:string | undefined):Promise <PostDB > {
+        public async findPostById(id: string | undefined): Promise<PostDB> {
+            const [result]: PostDB[] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
+                .where({ id})
+            return result
+        }
+    
+      
+/*
+    public async findPostById(id: string) {
         const [result]: PostDB[] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
-            .where({ id: id })
+            .where({ id })
         return result
     }
-
+*/
     public async findPostsByUserId(id: string) {
         const result = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
             .where({ creator_id: id })
@@ -60,12 +68,18 @@ export class PostDatabase extends BaseDatabase {
             .insert(newPostDB)
     }
 
-    public async updatePost(updatePostDB:PostDB){
+    public async updatePost(updatePostDB: PostDB) {
         await BaseDatabase
-        .connection(PostDatabase.TABLE_POSTS)
-        .update(updatePostDB)
-        .where({id:updatePostDB.id})
+            .connection(PostDatabase.TABLE_POSTS)
+            .update(updatePostDB)
+            .where({ id: updatePostDB.id })
     }
 
+    public async deletePostById(id: string) {
+        await BaseDatabase
+            .connection(PostDatabase.TABLE_POSTS)
+            .delete()
+            .where({ id })
+    }
 
 }
