@@ -48,10 +48,15 @@ export class UserDatabase extends BaseDatabase {
             .connection(UserDatabase.TABLE_USERS)
             .where({ email: email, password: password })
         return userDB
-
-
     }
 
+
+    public async findUserById(id: string) {
+        const result: UserDB[] = await BaseDatabase
+            .connection(UserDatabase.TABLE_USERS)
+            .where({ id: id })
+        return result
+    }
 
 
 
