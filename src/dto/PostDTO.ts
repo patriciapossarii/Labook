@@ -1,6 +1,6 @@
 import { BadRequestError } from "../erros/BadRequest"
 import { Post } from "../models/Post"
-import { PostWithUser } from "../types"
+import { PostWithUser, TPostRequest } from "../types"
 
 export interface GetPostsInputDTO {
     q: string | undefined
@@ -17,6 +17,10 @@ export interface GetPostsOutputDTO {
         id: string,
         name: string
     }
+}
+
+export interface CreatePostInputDTO {
+    content: string
 }
 
 
@@ -36,7 +40,6 @@ export class PostDTO {
         return dto
     }
 
-
     public getPostOutput(postWithUser: PostWithUser[]): GetPostsOutputDTO[] {
         return postWithUser.map((post) => ({
             id: post.id,
@@ -50,7 +53,21 @@ export class PostDTO {
                 name: post.creator.name
             }
         }))
+    }
 
+    public createPostInput(
+        content: unknown): CreatePostInputDTO {
+        if (content !== undefined) {
+            if (typeof content !== "string") {
+                throw new BadRequestError("'content' do post deve ser string.")
+            }
+        } else {
+            throw new BadRequestError("'content' do post deve ser informado.")
+        }
+        const dto: CreatePostInputDTO = {
+            content
+        }
+        return dto
     }
 
 

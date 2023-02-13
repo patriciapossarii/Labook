@@ -1,5 +1,5 @@
 import { PostDatabase } from "../database/PostDatabase"
-import { GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
+import { CreatePostInputDTO, GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
 import { PostWithUser } from "../types"
 import { v4 as uuidv4 } from 'uuid';
 import { PostDB } from "../types";
@@ -7,6 +7,7 @@ import { Post } from "../models/Post";
 import { TPostRequest } from "../types";
 import moment, { Moment } from 'moment'
 import { UserDatabase } from "../database/UserDatabase";
+import { BadRequestError } from "../erros/BadRequest";
 
 export class PostBusiness {
     constructor(
@@ -38,32 +39,18 @@ export class PostBusiness {
     }
 
 
-    public createPost = async (input: TPostRequest) => {
+    public createPost = async (input: CreatePostInputDTO) => {
         const { content } = input
-
-        if (content !== undefined) {
-            if (typeof content !== "string") {
-
-                throw new Error("'content' do post deve ser string.")
-            }
-            if (content.length < 2) {
-
-                throw new Error("'content' do post inválido. Deve conter no mínimo 2 caracteres")
-            }
-        } else {
-
-            throw new Error("'content' do post deve ser informado.")
+        if (content.length < 2) {
+            throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
-
         let myuuid = uuidv4()
         const userMocado = "user01"
-
         const newPost = new Post(
             myuuid,
             userMocado,
             content,
         )
-
         const newPostDB: PostDB = {
             id: newPost.getId(),
             creator_id: newPost.getCreatorId(),
@@ -73,12 +60,9 @@ export class PostBusiness {
             created_at: newPost.getCreatedAt(),
             updated_at: newPost.getUpdatedAt()
         }
-        const postDatabase = new PostDatabase()
-        await postDatabase.insertPost(newPostDB)
-
+        await this.postDatabase.insertPost(newPostDB)
         const output = {
             message: "Post registrado com sucesso",
-            post: newPost
         }
         return output
     }

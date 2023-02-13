@@ -18,7 +18,6 @@ export class PostContoller {
                 q: req.query.q
             }
             const input = this.postDTO.getPostInput(request.q)
-            console.log(input)
             const output = await this.postBusiness.getPosts(input)
             res.status(200).send(output)
         } catch (error) {
@@ -38,18 +37,14 @@ export class PostContoller {
     public createPost = async (req: Request, res: Response) => {
         try {
             const request = req.body as TPostRequest
-
-            const output = await this.postBusiness.createPost(request)
-
+            const input = this.postDTO.createPostInput(request.content)
+            const output = await this.postBusiness.createPost(input)
             res.status(201).send(output)
-
         } catch (error) {
             console.log(error)
-
             if (req.statusCode === 200) {
                 res.status(500)
             }
-
             if (error instanceof Error) {
                 res.send(error.message)
             } else {
