@@ -23,6 +23,12 @@ export interface CreatePostInputDTO {
     content: string
 }
 
+export interface EditPostInputDTO {
+    idToEdit: string,
+    newContent: string
+}
+
+
 
 export class PostDTO {
 
@@ -66,6 +72,24 @@ export class PostDTO {
         }
         const dto: CreatePostInputDTO = {
             content
+        }
+        return dto
+    }
+
+
+    public editPostInput(
+        idToEdit: string,
+        newContent: unknown): EditPostInputDTO {
+        if (newContent !== undefined) {
+            if (typeof newContent !== "string") {
+                throw new BadRequestError("'content' do post deve ser string.")
+            }
+        } else {
+            throw new BadRequestError("'content' do post deve ser informado.")
+        }
+        const dto: EditPostInputDTO = {
+            idToEdit,
+            newContent
         }
         return dto
     }

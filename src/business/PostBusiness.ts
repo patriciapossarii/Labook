@@ -1,5 +1,5 @@
 import { PostDatabase } from "../database/PostDatabase"
-import { CreatePostInputDTO, GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
+import { CreatePostInputDTO, EditPostInputDTO, GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
 import { PostWithUser } from "../types"
 import { v4 as uuidv4 } from 'uuid';
 import { PostDB } from "../types";
@@ -68,10 +68,9 @@ export class PostBusiness {
     }
 
 
-    public editPostById = async (input: any) => {
+    public editPostById = async (input: EditPostInputDTO) => {
         const { idToEdit, newContent } = input
 
-        const postDatabase = new PostDatabase()
         if (newContent !== undefined) {
             if (typeof newContent !== "string") {
 
@@ -83,7 +82,7 @@ export class PostBusiness {
             }
         }
 
-        const postToEditDB = await postDatabase.findPostById(idToEdit)
+        const postToEditDB = await this.postDatabase.findPostById(idToEdit)
         if (!postToEditDB) {
             throw new Error("'id' para editar não existe")
         }
@@ -110,10 +109,9 @@ export class PostBusiness {
             updated_at: post.getUpdatedAt()
         }
 
-        await postDatabase.updatePost(updatePostDB)
+        await this.postDatabase.updatePost(updatePostDB)
         const output = {
             message: "Post editado com sucesso",
-            post: post
         }
         return output
     }

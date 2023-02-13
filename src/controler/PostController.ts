@@ -55,12 +55,14 @@ export class PostContoller {
 
     public editPostById = async (req: Request, res: Response) => {
         try {
-
+            /*
             const idToEdit = req.params['id']
             const newContent = req.body.content
-            const input = { idToEdit, newContent }
-
-
+            */
+            const input = this.postDTO.editPostInput(
+                req.params['id'],
+                req.body.content
+            )
             const output = await this.postBusiness.editPostById(input)
             res.status(200).send(output)
 
