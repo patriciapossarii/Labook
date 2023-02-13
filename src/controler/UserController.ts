@@ -37,9 +37,8 @@ export class UserController {
     public signUp = async (req: Request, res: Response) => {
         try {
             const request = req.body as TSignupRequest
-
-            const output = await this.userBusiness.signUp(request)
-
+            const input = this.userDTO.signupUserInput(request.name, request.email, request.password)
+            const output = await this.userBusiness.signUp(input)
             res.status(201).send(output)
         } catch (error) {
             console.log(error)
@@ -58,9 +57,10 @@ export class UserController {
     public login = async (req: Request, res: Response) => {
         try {
             const request = req.body as TLoginRequest
+            const input = this.userDTO.loginUserInput( request.email, request.password)
+            const output = await this.userBusiness.login(input)
+            res.status(200).send(output)
 
-           
-           
         } catch (error) {
             console.log(error)
 
