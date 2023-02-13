@@ -29,12 +29,21 @@ export class PostDatabase extends BaseDatabase {
         return result
     }
 
-        public async findPostById(id: string | undefined): Promise<PostDB> {
-            const [result]: PostDB[] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
-                .where({ id})
-            return result
-        }
-    
+/*
+    public async findPostById(id: string | undefined): Promise<PostDB> {
+        const [result]: PostDB[] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
+            .where({ id: id })
+        return result
+    }
+*/
+
+
+public async findPostById(id: string | undefined): Promise<PostDB> {
+    const [result] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
+        .where({ id: id })
+    return result
+}
+
     public async findPostsByUserId(id: string) {
         const result = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
             .where({ creator_id: id })
@@ -72,12 +81,12 @@ export class PostDatabase extends BaseDatabase {
         await BaseDatabase
             .connection(PostDatabase.TABLE_POSTS)
             .delete()
-            .where({ id })
+            .where({ id:id })
     }
 
-    public async checkPostWithLike(userId:string,postId:string ){
+    public async checkPostWithLike(userId: string, postId: string) {
         const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
-        .where({user_id:userId,post_id:postId})
+            .where({ user_id: userId, post_id: postId })
         return result
     }
 
