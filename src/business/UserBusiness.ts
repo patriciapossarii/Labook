@@ -19,7 +19,6 @@ export class UserBusiness {
             userDB.id,
             userDB.name,
             userDB.email,
-            userDB.password,
             userDB.role,
             userDB.created_at
         ))

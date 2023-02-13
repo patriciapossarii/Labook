@@ -10,11 +10,10 @@ export interface GetUserOutputDTO {
     id: string,
     name: string,
     email: string
-    password: string,
+
     role: string,
     createdAt: string
 }
-
 
 export interface SignupUsertInputDTO {
     name: string,
@@ -51,17 +50,18 @@ export class UserDTO {
         return dto
     }
 
+
     public getUserOutput(users: User[]): GetUserOutputDTO[] {
         const result = users.map((user) => ({
             id: user.getId(),
             name: user.getName(),
             email: user.getEmail(),
-            password: user.getPassword(),
             role: user.getRole(),
             createdAt: user.getCreatedAt()
         }))
         return result
     }
+
 
     public signupUserInput(
         name: unknown,
@@ -97,12 +97,14 @@ export class UserDTO {
         return dto
     }
 
+
     public signupUserOutout(token: string): SignupUserOutputDTO {
         const dto: SignupUserOutputDTO = {
             token: token
         }
         return dto
     }
+
 
     public loginUserInput(
         email: unknown,
@@ -128,6 +130,7 @@ export class UserDTO {
         }
         return dto
     }
+
 
     public loginUserOutput(user: any): SignupUserOutputDTO {
         const dto: SignupUserOutputDTO = {

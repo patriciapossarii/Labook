@@ -29,20 +29,13 @@ export class PostDatabase extends BaseDatabase {
         return result
     }
 
-/*
+
     public async findPostById(id: string | undefined): Promise<PostDB> {
         const [result]: PostDB[] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
             .where({ id: id })
         return result
     }
-*/
 
-
-public async findPostById(id: string | undefined): Promise<PostDB> {
-    const [result] = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
-        .where({ id: id })
-    return result
-}
 
     public async findPostsByUserId(id: string) {
         const result = await BaseDatabase.connection(PostDatabase.TABLE_POSTS)
@@ -50,25 +43,42 @@ public async findPostById(id: string | undefined): Promise<PostDB> {
         return result
     }
 
-    public async postUser() {
-        const result = await BaseDatabase.connection(`${PostDatabase.TABLE_POSTS} as p`).innerJoin("users as u", "p.creator_id", "=", "u.id").select(
-            "p.id as id",
-            "p.content as content",
-            "p.likes as likes",
-            "p.dislikes as dislikes",
-            "p.created_at as createdAt",
-            "p.updated_at as updateAt",
-            "u.id as uid",
-            "u.name as name"
-        )
-        return result
+
+    public async postUser(q: string | undefined) {
+        if (q) {
+            const result = await BaseDatabase.connection(`${PostDatabase.TABLE_POSTS} as p`).innerJoin("users as u", "p.creator_id", "=", "u.id").select(
+                "p.id as id",
+                "p.content as content",
+                "p.likes as likes",
+                "p.dislikes as dislikes",
+                "p.created_at as createdAt",
+                "p.updated_at as updateAt",
+                "u.id as uid",
+                "u.name as name"
+            ).where("content", "LIKE", `%${q}%`)
+            return result
+        } else {
+            const result = await BaseDatabase.connection(`${PostDatabase.TABLE_POSTS} as p`).innerJoin("users as u", "p.creator_id", "=", "u.id").select(
+                "p.id as id",
+                "p.content as content",
+                "p.likes as likes",
+                "p.dislikes as dislikes",
+                "p.created_at as createdAt",
+                "p.updated_at as updateAt",
+                "u.id as uid",
+                "u.name as name"
+            )
+            return result
+        }
     }
+
 
     public async insertPost(newPostDB: PostDB) {
         await BaseDatabase
             .connection(PostDatabase.TABLE_POSTS)
             .insert(newPostDB)
     }
+
 
     public async updatePost(updatePostDB: PostDB) {
         await BaseDatabase
@@ -77,12 +87,14 @@ public async findPostById(id: string | undefined): Promise<PostDB> {
             .where({ id: updatePostDB.id })
     }
 
+
     public async deletePostById(id: string) {
         await BaseDatabase
             .connection(PostDatabase.TABLE_POSTS)
             .delete()
-            .where({ id:id })
+            .where({ id: id })
     }
+
 
     public async checkPostWithLike(userId: string, postId: string) {
         const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)

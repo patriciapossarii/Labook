@@ -14,7 +14,12 @@ export class PostContoller {
 
     public getPosts = async (req: Request, res: Response) => {
         try {
-            const output = await this.postBusiness.getPosts()
+            const request = {
+                q: req.query.q
+            }
+            const input = this.postDTO.getPostInput(request.q)
+            console.log(input)
+            const output = await this.postBusiness.getPosts(input)
             res.status(200).send(output)
         } catch (error) {
             console.log(error)

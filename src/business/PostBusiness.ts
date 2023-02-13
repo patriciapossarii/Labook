@@ -1,5 +1,5 @@
 import { PostDatabase } from "../database/PostDatabase"
-import { PostDTO } from "../dto/PostDTO"
+import { GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
 import { PostWithUser } from "../types"
 import { v4 as uuidv4 } from 'uuid';
 import { PostDB } from "../types";
@@ -14,12 +14,11 @@ export class PostBusiness {
         private postDatabase: PostDatabase
     ) { }
 
-    public getPosts = async () => {
+    public getPosts = async (input: GetPostsInputDTO) => {
+        const { q } = input
         const result: PostWithUser[] = []
-        const posts = await this.postDatabase.postUser()
-
+        const posts = await this.postDatabase.postUser(q)
         for (let post of posts) {
-
             let postWithUser: PostWithUser = {
                 id: post.id,
                 content: post.content,
@@ -34,8 +33,10 @@ export class PostBusiness {
             }
             result.push(postWithUser)
         }
-        return result
+        const output = this.postDTO.getPostOutput(result)
+        return output
     }
+
 
     public createPost = async (input: TPostRequest) => {
         const { content } = input
@@ -154,8 +155,8 @@ export class PostBusiness {
 
     }
 
-    public likeDislike = async (input:any)=>{
-        const { id, newLike,user } = input
+    public likeDislike = async (input: any) => {
+        const { id, newLike, user } = input
 
         const postDatabase = new PostDatabase()
         const userDatabase = new UserDatabase()
@@ -176,7 +177,7 @@ export class PostBusiness {
 
         if (newLike !== undefined) {
             if (typeof newLike !== "boolean") {
-               
+
                 throw new Error("'like' do post deve ser boolean (true ou false).")
             }
         }
@@ -213,12 +214,12 @@ export class PostBusiness {
         }
 
         await postDatabase.updatePost(updatePostDB)
-   
+
         const output = {
             message: "Like editado com sucesso",
             result: checkLikePost
         }
-        return output  
+        return output
     }
 
 }
