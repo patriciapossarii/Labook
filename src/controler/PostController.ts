@@ -53,22 +53,17 @@ export class PostContoller {
         }
     }
 
+
     public editPostById = async (req: Request, res: Response) => {
         try {
-            /*
-            const idToEdit = req.params['id']
-            const newContent = req.body.content
-            */
             const input = this.postDTO.editPostInput(
                 req.params['id'],
                 req.body.content
             )
             const output = await this.postBusiness.editPostById(input)
             res.status(200).send(output)
-
         } catch (error) {
             console.log(error)
-
             if (req.statusCode === 200) {
                 res.status(500)
             }
@@ -82,27 +77,24 @@ export class PostContoller {
 
     public deletPostById = async (req: Request, res: Response) => {
         try {
-            const input = {
-                idToDelete: req.params.id
-            }
-
+            const input = this.postDTO.deletePostInput(
+                req.params['id']
+            )
             const output = await this.postBusiness.deletPostById(input)
             res.status(200).send(output)
         } catch (error) {
             console.log(error)
-
             if (req.statusCode === 200) {
                 res.status(500)
             }
-
             if (error instanceof Error) {
                 res.send(error.message)
             } else {
                 res.send("Erro inesperado")
             }
         }
-
     }
+
 
     public likeDislike = async (req: Request, res: Response) => {
 

@@ -28,6 +28,9 @@ export interface EditPostInputDTO {
     newContent: string
 }
 
+export interface DeletePostInputDTO {
+    idToDelet: string
+}
 
 
 export class PostDTO {
@@ -46,6 +49,7 @@ export class PostDTO {
         return dto
     }
 
+
     public getPostOutput(postWithUser: PostWithUser[]): GetPostsOutputDTO[] {
         return postWithUser.map((post) => ({
             id: post.id,
@@ -60,6 +64,7 @@ export class PostDTO {
             }
         }))
     }
+
 
     public createPostInput(
         content: unknown): CreatePostInputDTO {
@@ -90,6 +95,22 @@ export class PostDTO {
         const dto: EditPostInputDTO = {
             idToEdit,
             newContent
+        }
+        return dto
+    }
+
+    
+    public deletePostInput(
+        idToDelet: string): DeletePostInputDTO {
+        if (idToDelet !== undefined) {
+            if (typeof idToDelet !== "string") {
+                throw new BadRequestError("'id' do post deve ser string.")
+            }
+        } else {
+            throw new BadRequestError("'id' do post deve ser informado.")
+        }
+        const dto: DeletePostInputDTO = {
+            idToDelet
         }
         return dto
     }

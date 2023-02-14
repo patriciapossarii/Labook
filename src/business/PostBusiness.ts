@@ -1,5 +1,5 @@
 import { PostDatabase } from "../database/PostDatabase"
-import { CreatePostInputDTO, EditPostInputDTO, GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
+import { CreatePostInputDTO, DeletePostInputDTO, EditPostInputDTO, GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
 import { PostWithUser } from "../types"
 import { v4 as uuidv4 } from 'uuid';
 import { PostDB } from "../types";
@@ -70,25 +70,15 @@ export class PostBusiness {
 
     public editPostById = async (input: EditPostInputDTO) => {
         const { idToEdit, newContent } = input
-
-        if (newContent !== undefined) {
-            if (typeof newContent !== "string") {
-
-                throw new Error("'content' do post deve ser string.")
-            }
-            if (newContent.length < 2) {
-
-                throw new Error("'content' do post inválido. Deve conter no mínimo 2 caracteres")
-            }
+        if (newContent.length < 2) {
+            throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
-
         const postToEditDB = await this.postDatabase.findPostById(idToEdit)
         if (!postToEditDB) {
-            throw new Error("'id' para editar não existe")
+            throw new BadRequestError("'id' para editar não existe")
         }
         var date = Date.now()
         let dateNow = (moment(date)).format('YYYY-MM-DD HH:mm:ss')
-
         const post = new Post(
             postToEditDB.id,
             postToEditDB.creator_id,
@@ -98,7 +88,6 @@ export class PostBusiness {
             postToEditDB.created_at,
             dateNow
         )
-
         const updatePostDB: PostDB = {
             id: post.getId(),
             creator_id: post.getCreatorId(),
@@ -108,7 +97,6 @@ export class PostBusiness {
             created_at: post.getCreatedAt(),
             updated_at: post.getUpdatedAt()
         }
-
         await this.postDatabase.updatePost(updatePostDB)
         const output = {
             message: "Post editado com sucesso",
@@ -116,26 +104,23 @@ export class PostBusiness {
         return output
     }
 
-    public deletPostById = async (input: any) => {
-        const { idToDelete } = input
 
-        const postDatabase = new PostDatabase()
-        const postToDeletBD = await postDatabase.findPostById(idToDelete)
-
+    public deletPostById = async (input: DeletePostInputDTO) => {
+        const { idToDelet } = input          
+        if(idToDelet === ":id"){
+            throw new BadRequestError("'id' deve ser informado") 
+        }    
+        const postToDeletBD = await this.postDatabase.findPostById(idToDelet)
         if (!postToDeletBD) {
-            throw new Error("'id' para deletar não existe")
+            throw new BadRequestError("'id' para deletar não existe")
         }
-
-        await postDatabase.deletePostById(postToDeletBD.id)
-
+        await this.postDatabase.deletePostById(postToDeletBD.id)
         const output = {
-            message: "Post deletado com sucessoo",
-            post: postToDeletBD
+            message: "Post deletado com sucesso"
         }
-
         return output
-
     }
+
 
     public likeDislike = async (input: any) => {
         const { id, newLike, user } = input
