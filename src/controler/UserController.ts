@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express'
 import { TLoginRequest, TSignupRequest, UserDB } from "../types";
 import { UserDTO } from "../dto/UserDTO";
 import { UserBusiness } from "../business/UserBusiness";
+import { BaseError } from '../erros/BaseError';
 
 export class UserController {
     constructor(
@@ -23,7 +24,8 @@ export class UserController {
                 res.status(500)
             }
             if (error instanceof Error) {
-                res.send(error.message)
+                const returnError = error as BaseError
+                res.status(returnError.statusCode).send(error.message)
             } else {
                 res.send("Erro inesperado")
             }
@@ -43,7 +45,8 @@ export class UserController {
                 res.status(500)
             }
             if (error instanceof Error) {
-                res.send(error.message)
+                const returnError = error as BaseError
+                res.status(returnError.statusCode).send(error.message)
             } else {
                 res.send("Erro inesperado")
             }
@@ -63,7 +66,8 @@ export class UserController {
                 res.status(500)
             }
             if (error instanceof Error) {
-                res.send(error.message)
+                const returnError = error as BaseError
+                res.status(returnError.statusCode).send(error.message)
             } else {
                 res.send("Erro inesperado")
             }

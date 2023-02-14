@@ -40,12 +40,12 @@ export class PostBusiness {
 
 
     public createPost = async (input: CreatePostInputDTO) => {
-        const { content,user } = input
+        const { content, user } = input
         if (content.length < 2) {
             throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
         let myuuid = uuidv4()
-     
+
         const newPost = new Post(
             myuuid,
             user,
@@ -69,7 +69,7 @@ export class PostBusiness {
 
 
     public editPostById = async (input: EditPostInputDTO) => {
-        const { idToEdit, newContent } = input
+        const { userId, idToEdit, newContent } = input
         if (newContent.length < 2) {
             throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
@@ -77,48 +77,60 @@ export class PostBusiness {
         if (!postToEditDB) {
             throw new BadRequestError("'id' para editar não existe")
         }
-        var date = Date.now()
-        let dateNow = (moment(date)).format('YYYY-MM-DD HH:mm:ss')
-        const post = new Post(
-            postToEditDB.id,
-            postToEditDB.creator_id,
-            newContent || postToEditDB.content,
-            postToEditDB.likes,
-            postToEditDB.dislikes,
-            postToEditDB.created_at,
-            dateNow
-        )
-        const updatePostDB: PostDB = {
-            id: post.getId(),
-            creator_id: post.getCreatorId(),
-            content: post.getContent(),
-            likes: post.getLikes(),
-            dislikes: post.getDislikes(),
-            created_at: post.getCreatedAt(),
-            updated_at: post.getUpdatedAt()
+        
+        if (postToEditDB.creator_id === userId) {
+            var date = Date.now()
+            let dateNow = (moment(date)).format('YYYY-MM-DD HH:mm:ss')
+            const post = new Post(
+                postToEditDB.id,
+                postToEditDB.creator_id,
+                newContent || postToEditDB.content,
+                postToEditDB.likes,
+                postToEditDB.dislikes,
+                postToEditDB.created_at,
+                dateNow
+            )
+            const updatePostDB: PostDB = {
+                id: post.getId(),
+                creator_id: post.getCreatorId(),
+                content: post.getContent(),
+                likes: post.getLikes(),
+                dislikes: post.getDislikes(),
+                created_at: post.getCreatedAt(),
+                updated_at: post.getUpdatedAt()
+            }
+            await this.postDatabase.updatePost(updatePostDB)
+            const output = {
+                message: "Post editado com sucesso",
+            }
+            return output
+        } else {
+            throw new BadRequestError("Post/User inválido")
         }
-        await this.postDatabase.updatePost(updatePostDB)
-        const output = {
-            message: "Post editado com sucesso",
-        }
-        return output
     }
 
 
     public deletPostById = async (input: DeletePostInputDTO) => {
-        const { idToDelet } = input          
-        if(idToDelet === ":id"){
-            throw new BadRequestError("'id' deve ser informado") 
-        }    
+        const { userId, idToDelet } = input
+        console.log("aaaaaa",idToDelet)
+        if (idToDelet === ":id") {
+            throw new BadRequestError("'id' deve ser informado")
+        }
+
         const postToDeletBD = await this.postDatabase.findPostById(idToDelet)
         if (!postToDeletBD) {
             throw new BadRequestError("'id' para deletar não existe")
         }
-        await this.postDatabase.deletePostById(postToDeletBD.id)
-        const output = {
-            message: "Post deletado com sucesso"
+       
+        if (postToDeletBD.creator_id === userId) {
+            await this.postDatabase.deletePostById(postToDeletBD.id)
+            const output = {
+                message: "Post deletado com sucesso"
+            }
+            return output
+        }else {
+            throw new BadRequestError("Post/User inválido")
         }
-        return output
     }
 
 

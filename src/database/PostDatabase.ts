@@ -102,6 +102,14 @@ export class PostDatabase extends BaseDatabase {
         return result
     }
 
+/*
+    public async checkPostUser(idPost: string, idUser: string) {
+        const postDB = await BaseDatabase
+            .connection(PostDatabase.TABLE_POSTS)
+            .where({ id: idPost, creator_id: idUser })
+        return postDB
+    }
+*/
 
 
 }
