@@ -20,7 +20,8 @@ export interface GetPostsOutputDTO {
 }
 
 export interface CreatePostInputDTO {
-    content: string
+    content: string,
+    user:string
 }
 
 export interface EditPostInputDTO {
@@ -67,7 +68,8 @@ export class PostDTO {
 
 
     public createPostInput(
-        content: unknown): CreatePostInputDTO {
+        content: unknown,
+        user:string): CreatePostInputDTO {
         if (content !== undefined) {
             if (typeof content !== "string") {
                 throw new BadRequestError("'content' do post deve ser string.")
@@ -76,7 +78,8 @@ export class PostDTO {
             throw new BadRequestError("'content' do post deve ser informado.")
         }
         const dto: CreatePostInputDTO = {
-            content
+            content,
+            user
         }
         return dto
     }

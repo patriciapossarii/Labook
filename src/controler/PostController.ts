@@ -37,7 +37,8 @@ export class PostContoller {
     public createPost = async (req: Request, res: Response) => {
         try {
             const request = req.body as TPostRequest
-            const input = this.postDTO.createPostInput(request.content)
+             const user= req.headers['user-id'] as string
+            const input = this.postDTO.createPostInput(request.content, user)
             const output = await this.postBusiness.createPost(input)
             res.status(201).send(output)
         } catch (error) {

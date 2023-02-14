@@ -19,6 +19,7 @@ export class UserBusiness {
             userDB.id,
             userDB.name,
             userDB.email,
+            "",
             userDB.role,
             userDB.created_at
         ))
@@ -69,9 +70,7 @@ export class UserBusiness {
         if (expression.test(request.email) != true) {
             throw new BadRequestError("'email'do usuário em formato inválido. Ex.: 'exemplo@exemplo.com'.")
         }
-        if (!request.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{4,12}$/g)) {
-            throw new BadRequestError("'password' do usuário em formato inválido. Deve conter entre 4 a 12 caracteres, com 1 letra maiuscula, 1 letra minúscula, 1 número.")
-        }
+        
         let checkLog = await this.userDatabase.checkLogin(request.email, request.password)
         const token = "um token jwt"
         if (checkLog.length > 0) {

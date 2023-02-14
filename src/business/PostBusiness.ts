@@ -40,15 +40,15 @@ export class PostBusiness {
 
 
     public createPost = async (input: CreatePostInputDTO) => {
-        const { content } = input
+        const { content,user } = input
         if (content.length < 2) {
             throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
         let myuuid = uuidv4()
-        const userMocado = "user01"
+     
         const newPost = new Post(
             myuuid,
-            userMocado,
+            user,
             content,
         )
         const newPostDB: PostDB = {
