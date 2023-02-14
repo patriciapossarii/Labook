@@ -1,10 +1,8 @@
-import { User } from "../models/User";
-import { UserDatabase } from "../database/UserDatabase";
 import express, { Request, Response } from 'express'
 import { TLoginRequest, TSignupRequest, UserDB } from "../types";
-import { v4 as uuidv4 } from 'uuid';
 import { UserDTO } from "../dto/UserDTO";
 import { UserBusiness } from "../business/UserBusiness";
+import { BaseError } from '../erros/BaseError';
 
 export class UserController {
     constructor(
@@ -14,67 +12,65 @@ export class UserController {
 
     public getUsers = async (req: Request, res: Response) => {
         try {
-            const input = {
+            const request = {
                 q: req.query.q
             }
+            const input = this.userDTO.getUserInput(request.q)
             const output = await this.userBusiness.getUsers(input)
             res.status(200).send(output)
         } catch (error) {
             console.log(error)
-
             if (req.statusCode === 200) {
                 res.status(500)
             }
-
             if (error instanceof Error) {
-                res.send(error.message)
+                const returnError = error as BaseError
+                res.status(returnError.statusCode).send(error.message)
             } else {
                 res.send("Erro inesperado")
             }
         }
     }
+
 
     public signUp = async (req: Request, res: Response) => {
         try {
             const request = req.body as TSignupRequest
-
-            const output = await this.userBusiness.signUp(request)
-
+            const input = this.userDTO.signupUserInput(request.name, request.email, request.password)
+            const output = await this.userBusiness.signUp(input)
             res.status(201).send(output)
         } catch (error) {
             console.log(error)
-
             if (req.statusCode === 200) {
                 res.status(500)
             }
             if (error instanceof Error) {
-                res.send(error.message)
+                const returnError = error as BaseError
+                res.status(returnError.statusCode).send(error.message)
             } else {
                 res.send("Erro inesperado")
             }
         }
     }
+
 
     public login = async (req: Request, res: Response) => {
         try {
             const request = req.body as TLoginRequest
-
-           
-           
+            const input = this.userDTO.loginUserInput(request.email, request.password)
+            const output = await this.userBusiness.login(input)
+            res.status(200).send(output)
         } catch (error) {
             console.log(error)
-
             if (req.statusCode === 200) {
                 res.status(500)
             }
             if (error instanceof Error) {
-                res.send(error.message)
+                const returnError = error as BaseError
+                res.status(returnError.statusCode).send(error.message)
             } else {
                 res.send("Erro inesperado")
             }
         }
     }
-
-
-
 }

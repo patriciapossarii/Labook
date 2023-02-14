@@ -24,6 +24,10 @@ export interface TSignupRequest {
     password: string,
 }
 
+export interface TSignupResponse {
+    token: string
+}
+
 export interface TLoginRequest {
     email: string,
     password: string,
