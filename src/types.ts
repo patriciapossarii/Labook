@@ -1,9 +1,15 @@
+export enum USER_ROLES {
+    USER = "USER",
+    ADMIN = "ADMIN"
+}
+
+
 export interface UserDB {
     id: string,
     name: string,
     email: string,
     password: string,
-    role: string,
+    role: USER_ROLES,
     created_at: string
 }
 

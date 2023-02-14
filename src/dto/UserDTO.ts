@@ -132,9 +132,9 @@ export class UserDTO {
     }
 
 
-    public loginUserOutput(user: any): SignupUserOutputDTO {
+    public loginUserOutput(tokenPayLoad: any): SignupUserOutputDTO {
         const dto: SignupUserOutputDTO = {
-            token: "um token jwt"
+            token: tokenPayLoad
         }
         return dto
     }

@@ -1,11 +1,16 @@
+import { UserDB, USER_ROLES } from "../types"
+import moment, { Moment } from 'moment'
+var date = Date.now()
+let dateNow = (moment(date)).format('YYYY-MM-DD HH:mm:ss')
+
 export class User {    
     constructor(
         private id: string,
         private name: string,
         private email: string,
         private password: string,
-        private role:string = "user",
-        private createdAt: string = new Date().toISOString()
+        private role: USER_ROLES,
+        private createdAt: string = dateNow
     ) {}
 
     public getId(): string {
@@ -36,10 +41,10 @@ export class User {
         this.password = value
     }
 
-    public getRole(): string {
+    public getRole(): USER_ROLES {
         return this.role
     }
-    public setRole(value: string): void {
+    public setRole(value: USER_ROLES): void {
         this.role = value
     }
 
@@ -49,4 +54,6 @@ export class User {
     public setCreatedAt(value: string): void {
         this.createdAt = value
     }
+
+    
 }
