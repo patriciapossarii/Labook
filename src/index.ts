@@ -1,7 +1,5 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
-import { UserController } from './controler/UserController'
-import { PostContoller } from './controler/PostController'
 import { postRouter } from './routers/postRouter'
 import { userRouter } from './routers/userRouter'
 import { BaseError } from './erros/BaseError'

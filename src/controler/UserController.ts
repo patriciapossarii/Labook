@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 import { TLoginRequest, TSignupRequest, UserDB } from "../types";
-import { UserDTO } from "../dto/UserDTO";
+import { GetUserInputDTO, UserDTO } from "../dto/UserDTO";
 import { UserBusiness } from "../business/UserBusiness";
 import { BaseError } from '../erros/BaseError';
 
@@ -12,10 +12,11 @@ export class UserController {
 
     public getUsers = async (req: Request, res: Response) => {
         try {
-            const request = {
-                q: req.query.q
+            const request: GetUserInputDTO= {
+                q: req.query.q as string,
+                token:req.headers.authorization 
             }
-            const input = this.userDTO.getUserInput(request.q)
+            const input = this.userDTO.getUserInput(request.q, request.token)
             const output = await this.userBusiness.getUsers(input)
             res.status(200).send(output)
         } catch (error) {

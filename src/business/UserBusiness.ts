@@ -5,6 +5,7 @@ import { UserDB, USER_ROLES } from "../types";
 import { BadRequestError } from "../erros/BadRequest";
 import { IdGenerator } from "../services/IdGenerator";
 import { TokenManager, TokenPayload } from "../services/TokenManager";
+import { HashManager } from "../services/HashManager";
 
 
 export class UserBusiness {
@@ -12,11 +13,19 @@ export class UserBusiness {
         private userDTO: UserDTO,
         private userDatabase: UserDatabase,
         private idGenerator: IdGenerator,
-        private tokenManager: TokenManager
+        private tokenManager: TokenManager,
+        private hashManager: HashManager
     ) { }
 
     public getUsers = async (input: GetUserInputDTO) => {
-        const { q } = input
+        const { q, token } = input
+        const payload = this.tokenManager.getPayload(token as string)
+        if (payload === null) {
+            throw new BadRequestError("'token' invalido")
+        }
+        if (payload.role !== USER_ROLES.ADMIN) {
+            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
+        }
         const teste = await this.userDatabase.findUsers(q)
         const users: User[] = teste.map((userDB) => new User(
             userDB.id,
@@ -46,13 +55,13 @@ export class UserBusiness {
         if (!input.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{4,12}$/g)) {
             throw new BadRequestError("'password' do usuário em formato inválido. Deve conter entre 4 a 12 caracteres, com 1 letra maiuscula, 1 letra minúscula, 1 número.")
         }
-
+        const passwordHash = await this.hashManager.hash(input.password)
         let myuuid = this.idGenerator.generate()
         const newUser = new User(
             myuuid,
             input.name,
             input.email,
-            input.password,
+            passwordHash,
             USER_ROLES.USER
         )
         const newUserDB: UserDB = {

@@ -3,7 +3,8 @@ import { User } from "../models/User"
 
 
 export interface GetUserInputDTO {
-    q: string | undefined
+    q: string | undefined,
+    token: string | undefined
 }
 
 export interface GetUserOutputDTO {
@@ -37,15 +38,20 @@ export interface LoginUserOutputDTO {
 export class UserDTO {
 
     public getUserInput(
-        q: unknown
+        q: unknown,
+        token:string | undefined
     ): GetUserInputDTO {
         if (q !== undefined) {
             if (typeof q !== "string") {
                 throw new BadRequestError("'q'  deve ser string.")
             }
         }
+        if (typeof token !== "string") {
+            throw new BadRequestError("'token' está vazio")
+        }
         const dto: GetUserInputDTO = {
-            q
+            q,
+            token
         }
         return dto
     }

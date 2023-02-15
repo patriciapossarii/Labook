@@ -1,18 +1,19 @@
 import { PostDatabase } from "../database/PostDatabase"
 import { CreatePostInputDTO, DeletePostInputDTO, EditPostInputDTO, GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
 import { PostWithUser } from "../types"
-import { v4 as uuidv4 } from 'uuid';
 import { PostDB } from "../types";
 import { Post } from "../models/Post";
 import { TPostRequest } from "../types";
 import moment, { Moment } from 'moment'
 import { UserDatabase } from "../database/UserDatabase";
 import { BadRequestError } from "../erros/BadRequest";
+import { IdGenerator } from "../services/IdGenerator";
 
 export class PostBusiness {
     constructor(
         private postDTO: PostDTO,
-        private postDatabase: PostDatabase
+        private postDatabase: PostDatabase,
+        private idGenerator: IdGenerator
     ) { }
 
     public getPosts = async (input: GetPostsInputDTO) => {
@@ -44,7 +45,7 @@ export class PostBusiness {
         if (content.length < 2) {
             throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
-        let myuuid = uuidv4()
+        let myuuid = this.idGenerator.generate()
 
         const newPost = new Post(
             myuuid,
@@ -77,7 +78,7 @@ export class PostBusiness {
         if (!postToEditDB) {
             throw new BadRequestError("'id' para editar não existe")
         }
-        
+
         if (postToEditDB.creator_id === userId) {
             var date = Date.now()
             let dateNow = (moment(date)).format('YYYY-MM-DD HH:mm:ss')
@@ -112,7 +113,7 @@ export class PostBusiness {
 
     public deletPostById = async (input: DeletePostInputDTO) => {
         const { userId, idToDelet } = input
-        console.log("aaaaaa",idToDelet)
+        console.log("aaaaaa", idToDelet)
         if (idToDelet === ":id") {
             throw new BadRequestError("'id' deve ser informado")
         }
@@ -121,14 +122,14 @@ export class PostBusiness {
         if (!postToDeletBD) {
             throw new BadRequestError("'id' para deletar não existe")
         }
-       
+
         if (postToDeletBD.creator_id === userId) {
             await this.postDatabase.deletePostById(postToDeletBD.id)
             const output = {
                 message: "Post deletado com sucesso"
             }
             return output
-        }else {
+        } else {
             throw new BadRequestError("Post/User inválido")
         }
     }

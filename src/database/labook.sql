@@ -66,4 +66,7 @@ VALUES(
 
      SELECT MAX(id) FROM users LIMIT 1;
      select * FROM likes_dislikes;
+     UPDATE users
+     SET role = "ADMIN"
+     WHERE id ="3bfef550-e5d4-4c32-b7e5-f89ad2bcef2c"
     
