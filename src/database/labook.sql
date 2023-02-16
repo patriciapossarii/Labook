@@ -58,15 +58,15 @@ VALUES(
 
     --DROP TABLE posts;
 
-    INSERT INTO posts (id,creator_id, content)
-    VALUES("post01","user03","radio e polonio"),
-    ("post02","user05","a corrente alternada");
-
+    
      SELECT * FROM posts;
 
      SELECT MAX(id) FROM users LIMIT 1;
      select * FROM likes_dislikes;
      UPDATE users
      SET role = "ADMIN"
-     WHERE id ="3bfef550-e5d4-4c32-b7e5-f89ad2bcef2c"
+     WHERE id ="55e8a334-c4d6-44c2-9b29-76423b4e7439";
+     UPDATE posts
+     SET likes = 0
+     WHERE id ="c899028e-1be9-40a2-9244-5d96b3bc5dd3";
     

@@ -1,5 +1,5 @@
 import { PostDatabase } from "../database/PostDatabase"
-import { CreatePostInputDTO, DeletePostInputDTO, EditPostInputDTO, GetPostsInputDTO, PostDTO } from "../dto/PostDTO"
+import { CreatePostInputDTO, DeletePostInputDTO, EditPostInputDTO, GetPostsInputDTO, LikeDislikeInputDTO, PostDTO } from "../dto/PostDTO"
 import { PostWithUser } from "../types"
 import { PostDB } from "../types";
 import { Post } from "../models/Post";
@@ -26,12 +26,7 @@ export class PostBusiness {
         if (payload === null) {
             throw new BadRequestError("'token' invalido")
         }
-        if (payload.role !== USER_ROLES.USER) {
-            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
-        }
-
         const result: PostWithUser[] = []
-
         const posts = await this.postDatabase.postUser(q)
         for (let post of posts) {
             let postWithUser: PostWithUser = {
@@ -60,7 +55,7 @@ export class PostBusiness {
             throw new BadRequestError("'token' invalido")
         }
         if (payload.role !== USER_ROLES.USER) {
-            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
+            throw new BadRequestError("Acesso Negado! Somente usuários podem criar posts")
         }
         if (content.length < 2) {
             throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
@@ -90,7 +85,17 @@ export class PostBusiness {
 
 
     public editPostById = async (input: EditPostInputDTO) => {
-        const { userId, idToEdit, newContent } = input
+        const { token, idToEdit, newContent } = input
+
+        const payload = this.tokenManager.getPayload(token as string)
+        if (payload === null) {
+            throw new BadRequestError("'token' invalido")
+        }
+        if (payload.role !== USER_ROLES.ADMIN && payload.role !== USER_ROLES.USER) {
+            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
+        }
+        const userId = payload?.id as string
+
         if (newContent.length < 2) {
             throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
@@ -126,16 +131,22 @@ export class PostBusiness {
             }
             return output
         } else {
-            throw new BadRequestError("Post/User inválido")
+            throw new BadRequestError("Somente o criador do post pode editá-lo")
         }
     }
 
 
     public deletPostById = async (input: DeletePostInputDTO) => {
-        const { userId, idToDelet } = input
+        const { token, idToDelet } = input
+        const payload = this.tokenManager.getPayload(token as string)
+        if (payload === null) {
+            throw new BadRequestError("'token' invalido")
+        }
+
+        const userId = payload?.id as string
 
         if (idToDelet === ":id") {
-            throw new BadRequestError("'id' deve ser informado")
+            throw new BadRequestError("'id' do post deve ser informado")
         }
 
         const postToDeletBD = await this.postDatabase.findPostById(idToDelet)
@@ -143,56 +154,50 @@ export class PostBusiness {
             throw new BadRequestError("'id' para deletar não existe")
         }
 
-        if (postToDeletBD.creator_id === userId) {
+
+
+        if (postToDeletBD.creator_id === userId || payload.role === USER_ROLES.ADMIN) {
+            await this.postDatabase.deleteLikesInDeletePost(idToDelet)
             await this.postDatabase.deletePostById(postToDeletBD.id)
             const output = {
                 message: "Post deletado com sucesso"
             }
             return output
         } else {
-            throw new BadRequestError("Post/User inválido")
+            throw new BadRequestError("Somente que criou o post ou o admin pode deletá-lo")
         }
     }
 
 
-    public likeDislike = async (input: any) => {
+    public likeDislike = async (input: LikeDislikeInputDTO) => {
         const { postId, newLikeDislike, token } = input
-
         const payload = this.tokenManager.getPayload(token as string)
         if (payload === null) {
             throw new BadRequestError("'token' invalido")
         }
-        if (payload.role !== USER_ROLES.ADMIN) {
+        if (payload.role !== USER_ROLES.USER) {
             throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
         }
         const userId = payload?.id as string
-
-
         const postExistDB = await this.postDatabase.findPostById(postId)
         if (!postExistDB) {
             throw new Error("'id' do post não existe")
         }
 
-
-        if (newLikeDislike !== undefined) {
+        
             if (typeof newLikeDislike !== "boolean") {
                 throw new Error("'like' do post deve ser boolean (true ou false).")
             }
-        }
-
-
+        
         let value = 0
         if (newLikeDislike === true) {
             value = 1
         }
-
-        console.log("valueee", value)
-
         const checkLikePost = await this.postDatabase.checkPostWithLike(userId, postId)
 
-        console.log(checkLikePost)
-
+        // POST JÁ COM LIKE DISLIKE
         if (checkLikePost.length >= 1) {
+            //VERIFICA O VALOR DA TABELA LIKE É IGUAL AO NOVO
             if (checkLikePost[0].like === value) {
                 if (value === 1) {
                     postExistDB.likes = postExistDB.likes - 1
@@ -203,34 +208,33 @@ export class PostBusiness {
                 await this.postDatabase.updatePost(postExistDB)
             } else {
                 if (checkLikePost[0].like === 1) {
-                    postExistDB.dislikes = postExistDB.dislikes + 1
-                    postExistDB.likes = postExistDB.likes -1
-                    checkLikePost[0].like = 0
+                    postExistDB.dislikes =  postExistDB.dislikes + 1
+                    postExistDB.likes = postExistDB.likes - 1
+                   
                 } else {
                     postExistDB.dislikes = postExistDB.dislikes - 1
-                    postExistDB.likes = postExistDB.likes +1
-                    checkLikePost[0].like = 1
+                    postExistDB.likes = postExistDB.likes + 1
+                
                 }
-                await this.postDatabase.updatetLikeDislike(checkLikePost[0].like)
-                await this.postDatabase.updatePost(postExistDB)
+                await this.postDatabase.updatetLikeDislike(checkLikePost[0].like,userId,postId)
+                                await this.postDatabase.updatePost(postExistDB)
             }
         } else {
+            // RECEBENDO PRIMEIRO LIKE OU DISLIKE
+            //atualiza tabela like-dislike
             await this.postDatabase.insertLikeDislike(userId, postId, value)
+            //se for 1 atualiza tabela like em posts
             if (value === 1) {
                 postExistDB.likes = postExistDB.likes + 1
-            } else {
+            } else {    //se for 0 atualiza tabela dislike em posts
                 postExistDB.dislikes = postExistDB.dislikes + 1
             }
             await this.postDatabase.updatePost(postExistDB)
         }
 
-        // const insertLikeDislike = await this.postDatabase.insertLikeDislike(userId, postId, value)
-
-
 
         const output = {
-            message: "Like editado com sucesso",
-            checkLikePost: checkLikePost
+            message: "Like / Dislike editado com sucesso",
         }
         return output
     }

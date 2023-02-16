@@ -117,9 +117,9 @@ public async insertLikeDislike(userId: string, postId:any, value:any) {
     return result
 }
 
-public async updatetLikeDislike( value:number) {
+public async updatetLikeDislike( value:number,userId:string, postId:string) {
     const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
-       .update({like: value})
+       .update({like: value}).where({user_id:userId, post_id:postId})
     return result
 }
 
@@ -141,5 +141,10 @@ public async updatePostDislike(value:number,postId:string) {
         .connection(PostDatabase.TABLE_POSTS)
         .update({dislike:value})
         .where({ post_id: postId })
+}
+public async deleteLikesInDeletePost ( postId:string) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .delete().where({post_id:postId})
+    return result
 }
 }

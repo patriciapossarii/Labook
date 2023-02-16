@@ -6,6 +6,7 @@ import { BadRequestError } from "../erros/BadRequest";
 import { IdGenerator } from "../services/IdGenerator";
 import { TokenManager, TokenPayload } from "../services/TokenManager";
 import { HashManager } from "../services/HashManager";
+import { NotFoundError } from "../erros/NotFountError";
 
 
 export class UserBusiness {
@@ -89,18 +90,26 @@ export class UserBusiness {
         if (expression.test(request.email) != true) {
             throw new BadRequestError("'email'do usuário em formato inválido. Ex.: 'exemplo@exemplo.com'.")
         }
-        let checkLog = await this.userDatabase.checkLogin(request.email, request.password)
-        if (checkLog.length > 0) {
-            const tokenPayLoad: TokenPayload = {
-                id: checkLog[0].id,
-                name: checkLog[0].name,
-                role: checkLog[0].role
-            }
-            const token = this.tokenManager.createToken(tokenPayLoad)
-            const output = this.userDTO.loginUserOutput(token)
-            return output
-        } else {
-            throw new BadRequestError("Email ou senha inválido")
+        const email = request.email
+        const userDB: UserDB | undefined = await this.userDatabase.findEmail(email)
+        if (!userDB) {
+            throw new NotFoundError("'email ou senha incorreto")
         }
+
+        const passwordHash = await this.hashManager.compare(request.password, userDB.password)
+            
+        if (!passwordHash) {
+            throw new NotFoundError("'email ou senha incorreto")
+        }
+
+        const tokenPayLoad: TokenPayload = {
+            id: userDB.id,
+            name: userDB.name,
+            role: userDB.role
+        }
+        const token = this.tokenManager.createToken(tokenPayLoad)
+        const output = this.userDTO.loginUserOutput(token)
+        return output
+
     }
 }

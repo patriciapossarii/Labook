@@ -26,16 +26,22 @@ export interface CreatePostInputDTO {
 }
 
 export interface EditPostInputDTO {
-    userId:string,
+    token:string,
     idToEdit: string,
     newContent: string
 }
 
 export interface DeletePostInputDTO {
-    userId:string,
+    token:string | undefined,
     idToDelet: string
 }
 
+
+export interface LikeDislikeInputDTO {
+    postId: string,
+    newLikeDislike: string ,
+    token: string | undefined
+}
 
 export class PostDTO {
 
@@ -92,7 +98,7 @@ export class PostDTO {
 
 
     public editPostInput(
-        userId:string,
+        token:string,
         idToEdit: string,
         newContent: unknown): EditPostInputDTO {
         if (newContent !== undefined) {
@@ -103,7 +109,7 @@ export class PostDTO {
             throw new BadRequestError("'content' do post deve ser informado.")
         }
         const dto: EditPostInputDTO = {
-            userId,
+           token,
             idToEdit,
             newContent
         }
@@ -112,7 +118,7 @@ export class PostDTO {
 
     
     public deletePostInput(
-        userId:string,
+        token:string,
         idToDelet: string): DeletePostInputDTO {
         if (idToDelet !== undefined) {
             if (typeof idToDelet !== "string") {
@@ -122,7 +128,7 @@ export class PostDTO {
             throw new BadRequestError("'id' do post deve ser informado.")
         }
         const dto: DeletePostInputDTO = {
-            userId,
+            token,
             idToDelet
         }
         return dto

@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import {
     TPostRequest,
 } from "../types"
-import { GetPostsInputDTO, PostDTO } from "../dto/PostDTO";
+import { CreatePostInputDTO, DeletePostInputDTO, EditPostInputDTO, GetPostsInputDTO, LikeDislikeInputDTO, PostDTO } from "../dto/PostDTO";
 import { PostBusiness } from "../business/PostBusiness";
 import { BaseError } from '../erros/BaseError';
 
@@ -19,7 +19,6 @@ export class PostContoller {
                 q: req.query.q as string,
                 token: req.headers.authorization
             }
-            console.log("aaaaaa", request.q)
             const input = this.postDTO.getPostInput(request.q, request.token as string)
             const output = await this.postBusiness.getPosts(input)
             res.status(200).send(output)
@@ -37,8 +36,9 @@ export class PostContoller {
     public createPost = async (req: Request, res: Response) => {
         try {
             const request = req.body as TPostRequest
-            const token = req.headers.authorization as string
-            const input = this.postDTO.createPostInput(request.content, token)
+            const input: CreatePostInputDTO = this.postDTO.createPostInput(
+                request.content,
+                req.headers.authorization as string)
             const output = await this.postBusiness.createPost(input)
             res.status(201).send(output)
         } catch (error) {
@@ -54,12 +54,11 @@ export class PostContoller {
 
     public editPostById = async (req: Request, res: Response) => {
         try {
-            const input = this.postDTO.editPostInput(
-                req.headers['user-id'] as string,
+            const input: EditPostInputDTO = this.postDTO.editPostInput(
+                req.headers.authorization as string,
                 req.params['id'],
                 req.body.content
             )
-
             const output = await this.postBusiness.editPostById(input)
             res.status(200).send(output)
         } catch (error) {
@@ -74,12 +73,11 @@ export class PostContoller {
 
     public deletPostById = async (req: Request, res: Response) => {
         try {
-            const input = this.postDTO.deletePostInput(
-                req.headers['user-id'] as string,
+            const input: DeletePostInputDTO = this.postDTO.deletePostInput(
+                req.headers.authorization as string,
                 req.params['id']
             )
             const output = await this.postBusiness.deletPostById(input)
-            console.log(input)
             res.status(200).send(output)
         } catch (error) {
             console.log(error)
@@ -94,15 +92,13 @@ export class PostContoller {
 
     public likeDislike = async (req: Request, res: Response) => {
         try {
-            const input = {
-                postId: req.params.id as string,
+            const input: LikeDislikeInputDTO = {
+                postId: req.params.id,
                 newLikeDislike: req.body.like,
-                token: req.headers.authorization as string
+                token: req.headers.authorization
             }
             const output = await this.postBusiness.likeDislike(input)
             res.status(200).send(output)
-
-
         } catch (error) {
             console.log(error)
             if (error instanceof BaseError) {
