@@ -3,7 +3,8 @@ import { Post } from "../models/Post"
 import { PostWithUser, TPostRequest } from "../types"
 
 export interface GetPostsInputDTO {
-    q: string | undefined
+    q:string | undefined,
+    token:string | undefined
 }
 
 export interface GetPostsOutputDTO {
@@ -21,7 +22,7 @@ export interface GetPostsOutputDTO {
 
 export interface CreatePostInputDTO {
     content: string,
-    user:string
+    token:string
 }
 
 export interface EditPostInputDTO {
@@ -39,7 +40,9 @@ export interface DeletePostInputDTO {
 export class PostDTO {
 
     public getPostInput(
-        q: unknown
+        q: unknown,
+        token: string
+        
     ): GetPostsInputDTO {
         if (q !== undefined) {
             if (typeof q !== "string") {
@@ -47,7 +50,8 @@ export class PostDTO {
             }
         }
         const dto: GetPostsInputDTO = {
-            q
+            q,
+            token
         }
         return dto
     }
@@ -71,7 +75,7 @@ export class PostDTO {
 
     public createPostInput(
         content: unknown,
-        user:string): CreatePostInputDTO {
+        token:string): CreatePostInputDTO {
         if (content !== undefined) {
             if (typeof content !== "string") {
                 throw new BadRequestError("'content' do post deve ser string.")
@@ -81,7 +85,7 @@ export class PostDTO {
         }
         const dto: CreatePostInputDTO = {
             content,
-            user
+            token
         }
         return dto
     }

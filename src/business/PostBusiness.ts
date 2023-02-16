@@ -8,17 +8,30 @@ import moment, { Moment } from 'moment'
 import { UserDatabase } from "../database/UserDatabase";
 import { BadRequestError } from "../erros/BadRequest";
 import { IdGenerator } from "../services/IdGenerator";
+import { TokenManager, USER_ROLES } from "../services/TokenManager";
+import { request } from "http";
 
 export class PostBusiness {
     constructor(
         private postDTO: PostDTO,
         private postDatabase: PostDatabase,
-        private idGenerator: IdGenerator
+        private idGenerator: IdGenerator,
+        private tokenManager: TokenManager,
+        private userDatabase: UserDatabase
     ) { }
 
     public getPosts = async (input: GetPostsInputDTO) => {
-        const { q } = input
+        const { q, token } = input
+        const payload = this.tokenManager.getPayload(token as string)
+        if (payload === null) {
+            throw new BadRequestError("'token' invalido")
+        }
+        if (payload.role !== USER_ROLES.USER) {
+            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
+        }
+
         const result: PostWithUser[] = []
+
         const posts = await this.postDatabase.postUser(q)
         for (let post of posts) {
             let postWithUser: PostWithUser = {
@@ -41,7 +54,14 @@ export class PostBusiness {
 
 
     public createPost = async (input: CreatePostInputDTO) => {
-        const { content, user } = input
+        const { content, token } = input
+        const payload = this.tokenManager.getPayload(token as string)
+        if (payload === null) {
+            throw new BadRequestError("'token' invalido")
+        }
+        if (payload.role !== USER_ROLES.USER) {
+            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
+        }
         if (content.length < 2) {
             throw new BadRequestError("'content' do post inválido. Deve conter no mínimo 2 caracteres")
         }
@@ -49,7 +69,7 @@ export class PostBusiness {
 
         const newPost = new Post(
             myuuid,
-            user,
+            payload?.id as string,
             content,
         )
         const newPostDB: PostDB = {
@@ -113,7 +133,7 @@ export class PostBusiness {
 
     public deletPostById = async (input: DeletePostInputDTO) => {
         const { userId, idToDelet } = input
-        console.log("aaaaaa", idToDelet)
+
         if (idToDelet === ":id") {
             throw new BadRequestError("'id' deve ser informado")
         }
@@ -136,68 +156,81 @@ export class PostBusiness {
 
 
     public likeDislike = async (input: any) => {
-        const { id, newLike, user } = input
+        const { postId, newLikeDislike, token } = input
 
-        const postDatabase = new PostDatabase()
-        const userDatabase = new UserDatabase()
-
-        const userExistDB = await userDatabase.findUserById(user)
-        if (!userExistDB) {
-            throw new Error("'id' do usuário não existe")
+        const payload = this.tokenManager.getPayload(token as string)
+        if (payload === null) {
+            throw new BadRequestError("'token' invalido")
         }
+        if (payload.role !== USER_ROLES.ADMIN) {
+            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
+        }
+        const userId = payload?.id as string
 
 
-        const postExistDB = await postDatabase.findPostById(id)
+        const postExistDB = await this.postDatabase.findPostById(postId)
         if (!postExistDB) {
             throw new Error("'id' do post não existe")
         }
 
 
-
-
-        if (newLike !== undefined) {
-            if (typeof newLike !== "boolean") {
-
+        if (newLikeDislike !== undefined) {
+            if (typeof newLikeDislike !== "boolean") {
                 throw new Error("'like' do post deve ser boolean (true ou false).")
             }
         }
-        /*
-                    let likeBD = 0
-                    if (newLike === true) {
-                        likeBD = 1
-                    } 
-        */
-        const checkLikePost = await postDatabase.checkPostWithLike(user, id)
-        console.log(checkLikePost)
 
 
-        const post = new Post(
-            postExistDB.id,
-            postExistDB.creator_id,
-            postExistDB.content,
-            postExistDB.likes || newLike,
-            postExistDB.dislikes,
-            postExistDB.created_at,
-            postExistDB.updated_at
-        )
-
-
-
-        const updatePostDB: PostDB = {
-            id: post.getId(),
-            creator_id: post.getCreatorId(),
-            content: post.getContent(),
-            likes: post.getLikes(),
-            dislikes: post.getDislikes(),
-            created_at: post.getCreatedAt(),
-            updated_at: post.getUpdatedAt()
+        let value = 0
+        if (newLikeDislike === true) {
+            value = 1
         }
 
-        await postDatabase.updatePost(updatePostDB)
+        console.log("valueee", value)
+
+        const checkLikePost = await this.postDatabase.checkPostWithLike(userId, postId)
+
+        console.log(checkLikePost)
+
+        if (checkLikePost.length >= 1) {
+            if (checkLikePost[0].like === value) {
+                if (value === 1) {
+                    postExistDB.likes = postExistDB.likes - 1
+                } else {
+                    postExistDB.dislikes = postExistDB.dislikes - 1
+                }
+                await this.postDatabase.removeLikeDislike(userId, postId)
+                await this.postDatabase.updatePost(postExistDB)
+            } else {
+                if (checkLikePost[0].like === 1) {
+                    postExistDB.dislikes = postExistDB.dislikes + 1
+                    postExistDB.likes = postExistDB.likes -1
+                    checkLikePost[0].like = 0
+                } else {
+                    postExistDB.dislikes = postExistDB.dislikes - 1
+                    postExistDB.likes = postExistDB.likes +1
+                    checkLikePost[0].like = 1
+                }
+                await this.postDatabase.updatetLikeDislike(checkLikePost[0].like)
+                await this.postDatabase.updatePost(postExistDB)
+            }
+        } else {
+            await this.postDatabase.insertLikeDislike(userId, postId, value)
+            if (value === 1) {
+                postExistDB.likes = postExistDB.likes + 1
+            } else {
+                postExistDB.dislikes = postExistDB.dislikes + 1
+            }
+            await this.postDatabase.updatePost(postExistDB)
+        }
+
+        // const insertLikeDislike = await this.postDatabase.insertLikeDislike(userId, postId, value)
+
+
 
         const output = {
             message: "Like editado com sucesso",
-            result: checkLikePost
+            checkLikePost: checkLikePost
         }
         return output
     }

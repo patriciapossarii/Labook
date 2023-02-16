@@ -111,5 +111,35 @@ export class PostDatabase extends BaseDatabase {
     }
 */
 
+public async insertLikeDislike(userId: string, postId:any, value:any) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .insert({user_id:userId, post_id:postId,like: value})
+    return result
+}
 
+public async updatetLikeDislike( value:number) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .update({like: value})
+    return result
+}
+
+
+public async removeLikeDislike(userId:string, postId:string) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .delete().where({user_id:userId, post_id:postId})
+    return result
+}
+
+public async updatePostLike(value:number,postId:string) {
+    await BaseDatabase
+        .connection(PostDatabase.TABLE_POSTS)
+        .update({like:value})
+        .where({ post_id: postId })
+}
+public async updatePostDislike(value:number,postId:string) {
+    await BaseDatabase
+        .connection(PostDatabase.TABLE_POSTS)
+        .update({dislike:value})
+        .where({ post_id: postId })
+}
 }

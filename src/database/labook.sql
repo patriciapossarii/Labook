@@ -26,7 +26,7 @@ CREATE TABLE likes_dislikes(
 );
 
 INSERT INTO likes_dislikes(user_id, post_id,like)
-VALUES("user01","post01",1);
+VALUES("3bfef550-e5d4-4c32-b7e5-f89ad2bcef2c","a438f2ed-563a-483c-ab42-95264ca2aeb0",1);
 INSERT INTO users (id, name, email, password) 
 VALUES(
         "user01",
