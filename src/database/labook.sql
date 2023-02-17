@@ -67,6 +67,6 @@ VALUES(
      SET role = "ADMIN"
      WHERE id ="55e8a334-c4d6-44c2-9b29-76423b4e7439";
      UPDATE posts
-     SET likes = 0
-     WHERE id ="c899028e-1be9-40a2-9244-5d96b3bc5dd3";
+     SET dislikes = 0, likes = 0
+     WHERE id ="b4e0df30-8c13-46ac-842a-170ad4626dd5";
     

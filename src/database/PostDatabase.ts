@@ -79,7 +79,7 @@ export class PostDatabase extends BaseDatabase {
             .insert(newPostDB)
     }
 
-
+/*
     public async updatePost(updatePostDB: PostDB) {
         await BaseDatabase
             .connection(PostDatabase.TABLE_POSTS)
@@ -87,6 +87,13 @@ export class PostDatabase extends BaseDatabase {
             .where({ id: updatePostDB.id })
     }
 
+    */
+    public async updatePost(updatePostDB: PostDB) {
+        await BaseDatabase
+            .connection(PostDatabase.TABLE_POSTS)
+            .update(updatePostDB)
+            .where({ id: updatePostDB.id })
+    }
 
     public async deletePostById(id: string) {
         await BaseDatabase

@@ -179,57 +179,76 @@ export class PostBusiness {
             throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
         }
         const userId = payload?.id as string
+        console.log("userrrr", userId)
         const postExistDB = await this.postDatabase.findPostById(postId)
         if (!postExistDB) {
-            throw new Error("'id' do post não existe")
+            throw new BadRequestError("'id' do post não existe")
         }
 
-        
-            if (typeof newLikeDislike !== "boolean") {
-                throw new Error("'like' do post deve ser boolean (true ou false).")
-            }
-        
+
+        if (typeof newLikeDislike !== "boolean") {
+            throw new BadRequestError("'like' do post deve ser boolean (true ou false).")
+        }
+
         let value = 0
         if (newLikeDislike === true) {
             value = 1
         }
-        const checkLikePost = await this.postDatabase.checkPostWithLike(userId, postId)
+        const checkLikeDislike = await this.postDatabase.checkPostWithLike(userId, postId)
 
-        // POST JÁ COM LIKE DISLIKE
-        if (checkLikePost.length >= 1) {
-            //VERIFICA O VALOR DA TABELA LIKE É IGUAL AO NOVO
-            if (checkLikePost[0].like === value) {
+
+        if (postExistDB.creator_id === userId) {
+            throw new BadRequestError("Você não pode curtir seu proprio post")
+        }
+
+
+        if (checkLikeDislike.length >= 1) {
+
+            if (checkLikeDislike[0].like === value) {
+
                 if (value === 1) {
                     postExistDB.likes = postExistDB.likes - 1
+                    console.log("EU ERA LIKE E RECEBI DOIS CLICKS -- SUMI")
                 } else {
                     postExistDB.dislikes = postExistDB.dislikes - 1
+                    console.log("EU ERA DISLIKE E RECEBI DOIS CLICKS -- SUMI")
                 }
                 await this.postDatabase.removeLikeDislike(userId, postId)
                 await this.postDatabase.updatePost(postExistDB)
             } else {
-                if (checkLikePost[0].like === 1) {
-                    postExistDB.dislikes =  postExistDB.dislikes + 1
+                if (checkLikeDislike[0].like === 1) {
+                    console.log("EU ERA LIKE E VIREI DISLIKE")
+                    postExistDB.dislikes = postExistDB.dislikes + 1
                     postExistDB.likes = postExistDB.likes - 1
-                   
+
                 } else {
-                    postExistDB.dislikes = postExistDB.dislikes - 1
-                    postExistDB.likes = postExistDB.likes + 1
-                
+                    console.log("EU ERA DISLIKE E VIREI LIKE")
+                    if (postExistDB.dislikes >= 1) {
+                        postExistDB.dislikes = postExistDB.dislikes - 1
+                        postExistDB.likes = postExistDB.likes + 1
+                    }
+                    await this.postDatabase.updatetLikeDislike(value, userId, postId)
+                    await this.postDatabase.updatePost(postExistDB)
+
                 }
-                await this.postDatabase.updatetLikeDislike(checkLikePost[0].like,userId,postId)
-                                await this.postDatabase.updatePost(postExistDB)
+                await this.postDatabase.updatetLikeDislike(value, userId, postId)
+                await this.postDatabase.updatePost(postExistDB)
             }
         } else {
-            // RECEBENDO PRIMEIRO LIKE OU DISLIKE
-            //atualiza tabela like-dislike
+            console.log("POST SEM LIKE/DISLIKE")
+             
             await this.postDatabase.insertLikeDislike(userId, postId, value)
-            //se for 1 atualiza tabela like em posts
+            console.log("POST SEM LIKE/DISLIKE----------------FIZ UPDATE EM TABELA LIKE/DISLIKE ")
             if (value === 1) {
                 postExistDB.likes = postExistDB.likes + 1
-            } else {    //se for 0 atualiza tabela dislike em posts
+                console.log("POST SEM LIKE/DISLIKE----------------------------RECEBEU LIKE")
+            } else {
                 postExistDB.dislikes = postExistDB.dislikes + 1
+                console.log("POST SEM LIKE/DISLIKE----------------------------RECEBEU DISLIKE")
             }
+           
             await this.postDatabase.updatePost(postExistDB)
+            console.log("POST SEM LIKE/DISLIKE----------------FIZ UPDATE EM TABELA POSTS ")
         }
 
 
