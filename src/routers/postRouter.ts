@@ -15,8 +15,7 @@ const postController = new PostContoller(
         new PostDTO(),
         new PostDatabase(),
         new IdGenerator(),
-        new TokenManager(),
-        new UserDatabase()
+        new TokenManager()
     )
 )
 
