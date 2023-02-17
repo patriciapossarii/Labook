@@ -1,19 +1,32 @@
 import { UserDatabase } from "../database/UserDatabase";
 import { GetUserInputDTO, LoginUserInputDTO, SignupUsertInputDTO, UserDTO } from "../dto/UserDTO";
 import { User } from "../models/User";
-import { UserDB } from "../types";
-import { v4 as uuidv4 } from 'uuid';
+import { UserDB, USER_ROLES } from "../types";
 import { BadRequestError } from "../erros/BadRequest";
+import { IdGenerator } from "../services/IdGenerator";
+import { TokenManager, TokenPayload } from "../services/TokenManager";
+import { HashManager } from "../services/HashManager";
+import { NotFoundError } from "../erros/NotFountError";
 
 
 export class UserBusiness {
     constructor(
         private userDTO: UserDTO,
-        private userDatabase: UserDatabase
+        private userDatabase: UserDatabase,
+        private idGenerator: IdGenerator,
+        private tokenManager: TokenManager,
+        private hashManager: HashManager
     ) { }
 
     public getUsers = async (input: GetUserInputDTO) => {
-        const { q } = input
+        const { q, token } = input
+        const payload = this.tokenManager.getPayload(token as string)
+        if (payload === null) {
+            throw new BadRequestError("'token' invalido")
+        }
+        if (payload.role !== USER_ROLES.ADMIN) {
+            throw new BadRequestError("Acesso Negado! Seu acesso é de usuário")
+        }
         const teste = await this.userDatabase.findUsers(q)
         const users: User[] = teste.map((userDB) => new User(
             userDB.id,
@@ -43,12 +56,14 @@ export class UserBusiness {
         if (!input.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{4,12}$/g)) {
             throw new BadRequestError("'password' do usuário em formato inválido. Deve conter entre 4 a 12 caracteres, com 1 letra maiuscula, 1 letra minúscula, 1 número.")
         }
-        let myuuid = uuidv4();
+        const passwordHash = await this.hashManager.hash(input.password)
+        let myuuid = this.idGenerator.generate()
         const newUser = new User(
             myuuid,
             input.name,
             input.email,
-            input.password
+            passwordHash,
+            USER_ROLES.USER
         )
         const newUserDB: UserDB = {
             id: newUser.getId(),
@@ -59,7 +74,12 @@ export class UserBusiness {
             created_at: newUser.getCreatedAt()
         }
         await this.userDatabase.insertUser(newUserDB)
-        const token = "um token jwt"
+        const tokenPayLoad: TokenPayload = {
+            id: newUser.getId(),
+            name: newUser.getName(),
+            role: newUser.getRole()
+        }
+        const token = this.tokenManager.createToken(tokenPayLoad)
         const output = this.userDTO.signupUserOutout(token)
         return output
     }
@@ -70,14 +90,26 @@ export class UserBusiness {
         if (expression.test(request.email) != true) {
             throw new BadRequestError("'email'do usuário em formato inválido. Ex.: 'exemplo@exemplo.com'.")
         }
-        
-        let checkLog = await this.userDatabase.checkLogin(request.email, request.password)
-        const token = "um token jwt"
-        if (checkLog.length > 0) {
-            const output = this.userDTO.loginUserOutput(token)
-            return output
-        } else {
-            throw new BadRequestError("Email ou senha inválido")
+        const email = request.email
+        const userDB: UserDB | undefined = await this.userDatabase.findEmail(email)
+        if (!userDB) {
+            throw new NotFoundError("'email ou senha incorreto")
         }
+
+        const passwordHash = await this.hashManager.compare(request.password, userDB.password)
+            
+        if (!passwordHash) {
+            throw new NotFoundError("'email ou senha incorreto")
+        }
+
+        const tokenPayLoad: TokenPayload = {
+            id: userDB.id,
+            name: userDB.name,
+            role: userDB.role
+        }
+        const token = this.tokenManager.createToken(tokenPayLoad)
+        const output = this.userDTO.loginUserOutput(token)
+        return output
+
     }
 }

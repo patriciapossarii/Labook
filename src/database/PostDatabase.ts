@@ -79,7 +79,7 @@ export class PostDatabase extends BaseDatabase {
             .insert(newPostDB)
     }
 
-
+/*
     public async updatePost(updatePostDB: PostDB) {
         await BaseDatabase
             .connection(PostDatabase.TABLE_POSTS)
@@ -87,6 +87,13 @@ export class PostDatabase extends BaseDatabase {
             .where({ id: updatePostDB.id })
     }
 
+    */
+    public async updatePost(updatePostDB: PostDB) {
+        await BaseDatabase
+            .connection(PostDatabase.TABLE_POSTS)
+            .update(updatePostDB)
+            .where({ id: updatePostDB.id })
+    }
 
     public async deletePostById(id: string) {
         await BaseDatabase
@@ -111,5 +118,40 @@ export class PostDatabase extends BaseDatabase {
     }
 */
 
+public async insertLikeDislike(userId: string, postId:any, value:any) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .insert({user_id:userId, post_id:postId,like: value})
+    return result
+}
 
+public async updatetLikeDislike( value:number,userId:string, postId:string) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .update({like: value}).where({user_id:userId, post_id:postId})
+    return result
+}
+
+
+public async removeLikeDislike(userId:string, postId:string) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .delete().where({user_id:userId, post_id:postId})
+    return result
+}
+
+public async updatePostLike(value:number,postId:string) {
+    await BaseDatabase
+        .connection(PostDatabase.TABLE_POSTS)
+        .update({like:value})
+        .where({ post_id: postId })
+}
+public async updatePostDislike(value:number,postId:string) {
+    await BaseDatabase
+        .connection(PostDatabase.TABLE_POSTS)
+        .update({dislike:value})
+        .where({ post_id: postId })
+}
+public async deleteLikesInDeletePost ( postId:string) {
+    const result = await BaseDatabase.connection(PostDatabase.TABLE_LIKES_DISLIKES)
+       .delete().where({post_id:postId})
+    return result
+}
 }

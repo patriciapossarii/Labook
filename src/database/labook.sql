@@ -26,7 +26,7 @@ CREATE TABLE likes_dislikes(
 );
 
 INSERT INTO likes_dislikes(user_id, post_id,like)
-VALUES("user01","post01",1);
+VALUES("3bfef550-e5d4-4c32-b7e5-f89ad2bcef2c","a438f2ed-563a-483c-ab42-95264ca2aeb0",1);
 INSERT INTO users (id, name, email, password) 
 VALUES(
         "user01",
@@ -58,12 +58,15 @@ VALUES(
 
     --DROP TABLE posts;
 
-    INSERT INTO posts (id,creator_id, content)
-    VALUES("post01","user03","radio e polonio"),
-    ("post02","user05","a corrente alternada");
-
+    
      SELECT * FROM posts;
 
      SELECT MAX(id) FROM users LIMIT 1;
      select * FROM likes_dislikes;
+     UPDATE users
+     SET role = "ADMIN"
+     WHERE id ="55e8a334-c4d6-44c2-9b29-76423b4e7439";
+     UPDATE posts
+     SET dislikes = 0, likes = 0
+     WHERE id ="b4e0df30-8c13-46ac-842a-170ad4626dd5";
     

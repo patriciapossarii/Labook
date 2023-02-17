@@ -3,7 +3,8 @@ import { Post } from "../models/Post"
 import { PostWithUser, TPostRequest } from "../types"
 
 export interface GetPostsInputDTO {
-    q: string | undefined
+    q:string | undefined,
+    token:string | undefined
 }
 
 export interface GetPostsOutputDTO {
@@ -21,25 +22,33 @@ export interface GetPostsOutputDTO {
 
 export interface CreatePostInputDTO {
     content: string,
-    user:string
+    token:string
 }
 
 export interface EditPostInputDTO {
-    userId:string,
+    token:string,
     idToEdit: string,
     newContent: string
 }
 
 export interface DeletePostInputDTO {
-    userId:string,
+    token:string | undefined,
     idToDelet: string
 }
 
 
+export interface LikeDislikeInputDTO {
+    postId: string,
+    newLikeDislike: string ,
+    token: string | undefined
+}
+
 export class PostDTO {
 
     public getPostInput(
-        q: unknown
+        q: unknown,
+        token: string
+        
     ): GetPostsInputDTO {
         if (q !== undefined) {
             if (typeof q !== "string") {
@@ -47,7 +56,8 @@ export class PostDTO {
             }
         }
         const dto: GetPostsInputDTO = {
-            q
+            q,
+            token
         }
         return dto
     }
@@ -71,7 +81,7 @@ export class PostDTO {
 
     public createPostInput(
         content: unknown,
-        user:string): CreatePostInputDTO {
+        token:string): CreatePostInputDTO {
         if (content !== undefined) {
             if (typeof content !== "string") {
                 throw new BadRequestError("'content' do post deve ser string.")
@@ -81,14 +91,14 @@ export class PostDTO {
         }
         const dto: CreatePostInputDTO = {
             content,
-            user
+            token
         }
         return dto
     }
 
 
     public editPostInput(
-        userId:string,
+        token:string,
         idToEdit: string,
         newContent: unknown): EditPostInputDTO {
         if (newContent !== undefined) {
@@ -99,7 +109,7 @@ export class PostDTO {
             throw new BadRequestError("'content' do post deve ser informado.")
         }
         const dto: EditPostInputDTO = {
-            userId,
+           token,
             idToEdit,
             newContent
         }
@@ -108,7 +118,7 @@ export class PostDTO {
 
     
     public deletePostInput(
-        userId:string,
+        token:string,
         idToDelet: string): DeletePostInputDTO {
         if (idToDelet !== undefined) {
             if (typeof idToDelet !== "string") {
@@ -118,7 +128,7 @@ export class PostDTO {
             throw new BadRequestError("'id' do post deve ser informado.")
         }
         const dto: DeletePostInputDTO = {
-            userId,
+            token,
             idToDelet
         }
         return dto
